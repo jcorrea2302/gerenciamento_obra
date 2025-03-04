@@ -46,11 +46,14 @@
             padding: 10px 20px;
             cursor: pointer;
         }
+        .presenca-checkbox {
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <h1>Gerenciamento de Obra</h1>
-    
+
     <h2>Cadastro de Colaboradores</h2>
     <form id="cadastroForm">
         <input type="number" id="matricula" placeholder="Matrícula" required>
@@ -66,14 +69,17 @@
         <input type="submit" value="Remover">
     </form>
 
-    <h2>Lista de Colaboradores</h2>
-    <table id="tabelaColaboradores">
+    <h2>Lista de Presença</h2>
+    <input type="date" id="filtroData">
+    <button onclick="filtrarPresenca()">Filtrar</button>
+    <table id="tabelaPresenca">
         <thead>
             <tr>
                 <th>Matrícula</th>
                 <th>Nome</th>
                 <th>Data de Admissão</th>
                 <th>PIS</th>
+                <th>Presença</th>
             </tr>
         </thead>
         <tbody>
@@ -85,16 +91,72 @@
         // Função para carregar colaboradores do localStorage
         function carregarColaboradores() {
             const colaboradores = JSON.parse(localStorage.getItem('colaboradores')) || [];
-            const tabela = document.getElementById('tabelaColaboradores').getElementsByTagName('tbody')[0];
+            return colaboradores;
+        }
+
+        // Função para salvar colaboradores no localStorage
+        function salvarColaboradores(colaboradores) {
+            localStorage.setItem('colaboradores', JSON.stringify(colaboradores));
+        }
+
+        // Função para carregar presenças do localStorage
+        function carregarPresencas() {
+            const presencas = JSON.parse(localStorage.getItem('presencas')) || {};
+            return presencas;
+        }
+
+        // Função para salvar presenças no localStorage
+        function salvarPresencas(presencas) {
+            localStorage.setItem('presencas', JSON.stringify(presencas));
+        }
+
+        // Função para atualizar a tabela de presença
+        function atualizarTabelaPresenca(colaboradores, dataFiltro) {
+            const tabela = document.getElementById('tabelaPresenca').getElementsByTagName('tbody')[0];
             tabela.innerHTML = '';
-            
+
+            const presencas = carregarPresencas();
+
             colaboradores.forEach(colaborador => {
                 let linha = tabela.insertRow();
                 linha.insertCell(0).textContent = colaborador.matricula;
                 linha.insertCell(1).textContent = colaborador.nome;
                 linha.insertCell(2).textContent = colaborador.dataAdmissao;
                 linha.insertCell(3).textContent = colaborador.pis;
+
+                let celulaPresenca = linha.insertCell(4);
+                celulaPresenca.classList.add('presenca-checkbox');
+
+                let checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `presenca-${colaborador.matricula}`;
+                checkbox.checked = presencas[dataFiltro] && presencas[dataFiltro][colaborador.matricula];
+
+                checkbox.addEventListener('change', function() {
+                    atualizarPresenca(colaborador.matricula, dataFiltro, this.checked);
+                });
+
+                celulaPresenca.appendChild(checkbox);
             });
+        }
+
+        // Função para atualizar a presença no localStorage
+        function atualizarPresenca(matricula, data, presente) {
+            let presencas = carregarPresencas();
+
+            if (!presencas[data]) {
+                presencas[data] = {};
+            }
+
+            presencas[data][matricula] = presente;
+            salvarPresencas(presencas);
+        }
+
+        // Função para filtrar a presença por data
+        function filtrarPresenca() {
+            const dataFiltro = document.getElementById('filtroData').value;
+            const colaboradores = carregarColaboradores();
+            atualizarTabelaPresenca(colaboradores, dataFiltro);
         }
 
         // Função para cadastrar novo colaborador
@@ -106,12 +168,12 @@
                 dataAdmissao: document.getElementById('dataAdmissao').value,
                 pis: document.getElementById('pis').value
             };
-            
-            let colaboradores = JSON.parse(localStorage.getItem('colaboradores')) || [];
+
+            let colaboradores = carregarColaboradores();
             colaboradores.push(colaborador);
-            localStorage.setItem('colaboradores', JSON.stringify(colaboradores));
-            
-            carregarColaboradores();
+            salvarColaboradores(colaboradores);
+
+            atualizarTabelaPresenca(colaboradores, document.getElementById('filtroData').value);
             this.reset();
         });
 
@@ -119,17 +181,22 @@
         document.getElementById('remocaoForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const matriculaRemocao = document.getElementById('matriculaRemocao').value;
-            
-            let colaboradores = JSON.parse(localStorage.getItem('colaboradores')) || [];
+
+            let colaboradores = carregarColaboradores();
             colaboradores = colaboradores.filter(c => c.matricula !== matriculaRemocao);
-            localStorage.setItem('colaboradores', JSON.stringify(colaboradores));
-            
-            carregarColaboradores();
+            salvarColaboradores(colaboradores);
+
+            atualizarTabelaPresenca(colaboradores, document.getElementById('filtroData').value);
             this.reset();
         });
 
-        // Carregar colaboradores ao iniciar a página
-        carregarColaboradores();
+        // Carregar colaboradores e atualizar a tabela ao iniciar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            const colaboradores = carregarColaboradores();
+            const dataAtual = new Date().toISOString().split('T')[0];
+            document.getElementById('filtroData').value = dataAtual;
+            atualizarTabelaPresenca(colaboradores, dataAtual);
+        });
     </script>
 </body>
 </html>
