@@ -87,6 +87,9 @@
         </tbody>
     </table>
 
+    <h2>Total de Presenças</h2>
+    <p id="totalPresencas">Total de Presenças: 0</p>
+
     <script>
         // Função para carregar colaboradores do localStorage
         function carregarColaboradores() {
@@ -138,6 +141,8 @@
 
                 celulaPresenca.appendChild(checkbox);
             });
+
+            atualizarTotalPresencas();
         }
 
         // Função para atualizar a presença no localStorage
@@ -150,6 +155,8 @@
 
             presencas[data][matricula] = presente;
             salvarPresencas(presencas);
+
+            atualizarTotalPresencas();
         }
 
         // Função para filtrar a presença por data
@@ -189,6 +196,22 @@
             atualizarTabelaPresenca(colaboradores, document.getElementById('filtroData').value);
             this.reset();
         });
+
+        // Função para calcular e exibir o total de presenças
+        function atualizarTotalPresencas() {
+            const presencas = carregarPresencas();
+            let total = 0;
+
+            for (let data in presencas) {
+                for (let matricula in presencas[data]) {
+                    if (presencas[data][matricula]) {
+                        total++;
+                    }
+                }
+            }
+
+            document.getElementById('totalPresencas').textContent = `Total de Presenças: ${total}`;
+        }
 
         // Carregar colaboradores e atualizar a tabela ao iniciar a página
         document.addEventListener('DOMContentLoaded', function() {
