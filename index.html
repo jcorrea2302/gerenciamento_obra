@@ -11,14 +11,10 @@
             padding: 20px;
             background-color: #f4f4f4;
         }
-        h1, h2 {
-            text-align: center;
-        }
         table {
             width: 100%;
             border-collapse: collapse;
             background: white;
-            margin-bottom: 20px;
         }
         th, td {
             border: 1px solid #ddd;
@@ -29,57 +25,23 @@
             background-color: #007bff;
             color: white;
         }
-        form {
-            background: white;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        input[type="text"], input[type="date"], input[type="number"] {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-        }
-        input[type="submit"] {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-        }
-        .presenca-checkbox {
-            text-align: center;
-        }
     </style>
 </head>
 <body>
     <h1>Gerenciamento de Obra</h1>
-
-    <h2>Cadastro de Colaboradores</h2>
-    <form id="cadastroForm">
-        <input type="number" id="matricula" placeholder="Matrícula" required>
-        <input type="text" id="nome" placeholder="Nome" required>
-        <input type="date" id="dataAdmissao" required>
-        <input type="text" id="pis" placeholder="PIS" required>
-        <input type="submit" value="Cadastrar">
-    </form>
-
-    <h2>Remoção de Colaboradores</h2>
-    <form id="remocaoForm">
-        <input type="number" id="matriculaRemocao" placeholder="Matrícula para Remoção" required>
-        <input type="submit" value="Remover">
-    </form>
-
-    <h2>Lista de Presença</h2>
-    <input type="date" id="filtroData">
-    <button onclick="filtrarPresenca()">Filtrar</button>
-    <table id="tabelaPresenca">
+    <table id="tabelaColaboradores">
         <thead>
             <tr>
                 <th>Matrícula</th>
                 <th>Nome</th>
-                <th>Data de Admissão</th>
-                <th>PIS</th>
-                <th>Presença</th>
+                <th>Função</th>
+                <!-- Adicione aqui as datas do mês de fevereiro -->
+                <th>01/02</th>
+                <th>02/02</th>
+                <th>03/02</th>
+                <!-- Continue até 28/02 -->
+                <th>28/02</th>
+                <th>Total Presenças</th>
             </tr>
         </thead>
         <tbody>
@@ -87,139 +49,60 @@
         </tbody>
     </table>
 
-    <h2>Total de Presenças</h2>
-    <p id="totalPresencas">Total de Presenças: 0</p>
-
     <script>
-        // Função para carregar colaboradores do localStorage
-        function carregarColaboradores() {
-            const colaboradores = JSON.parse(localStorage.getItem('colaboradores')) || [];
-            return colaboradores;
+        // Exemplo de dados dos colaboradores
+        const colaboradores = [
+            {
+                matricula: "123",
+                nome: "João Silva",
+                funcao: "Engenheiro",
+                presencas: {
+                    "01/02": true,
+                    "02/02": false,
+                    "03/02": true,
+                    // Continue até 28/02
+                    "28/02": true
+                }
+            },
+            // Adicione mais colaboradores aqui
+        ];
+
+        // Função para calcular o total de presenças
+        function calcularTotalPresencas(presencas) {
+            let total = 0;
+            for (let data in presencas) {
+                if (presencas[data]) {
+                    total++;
+                }
+            }
+            return total;
         }
 
-        // Função para salvar colaboradores no localStorage
-        function salvarColaboradores(colaboradores) {
-            localStorage.setItem('colaboradores', JSON.stringify(colaboradores));
-        }
-
-        // Função para carregar presenças do localStorage
-        function carregarPresencas() {
-            const presencas = JSON.parse(localStorage.getItem('presencas')) || {};
-            return presencas;
-        }
-
-        // Função para salvar presenças no localStorage
-        function salvarPresencas(presencas) {
-            localStorage.setItem('presencas', JSON.stringify(presencas));
-        }
-
-        // Função para atualizar a tabela de presença
-        function atualizarTabelaPresenca(colaboradores, dataFiltro) {
-            const tabela = document.getElementById('tabelaPresenca').getElementsByTagName('tbody')[0];
+        // Função para preencher a tabela
+        function preencherTabela() {
+            const tabela = document.getElementById('tabelaColaboradores').getElementsByTagName('tbody')[0];
             tabela.innerHTML = '';
-
-            const presencas = carregarPresencas();
 
             colaboradores.forEach(colaborador => {
                 let linha = tabela.insertRow();
                 linha.insertCell(0).textContent = colaborador.matricula;
                 linha.insertCell(1).textContent = colaborador.nome;
-                linha.insertCell(2).textContent = colaborador.dataAdmissao;
-                linha.insertCell(3).textContent = colaborador.pis;
+                linha.insertCell(2).textContent = colaborador.funcao;
 
-                let celulaPresenca = linha.insertCell(4);
-                celulaPresenca.classList.add('presenca-checkbox');
-
-                let checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.id = `presenca-${colaborador.matricula}`;
-                checkbox.checked = presencas[dataFiltro] && presencas[dataFiltro][colaborador.matricula];
-
-                checkbox.addEventListener('change', function() {
-                    atualizarPresenca(colaborador.matricula, dataFiltro, this.checked);
-                });
-
-                celulaPresenca.appendChild(checkbox);
-            });
-
-            atualizarTotalPresencas();
-        }
-
-        // Função para atualizar a presença no localStorage
-        function atualizarPresenca(matricula, data, presente) {
-            let presencas = carregarPresencas();
-
-            if (!presencas[data]) {
-                presencas[data] = {};
-            }
-
-            presencas[data][matricula] = presente;
-            salvarPresencas(presencas);
-
-            atualizarTotalPresencas();
-        }
-
-        // Função para filtrar a presença por data
-        function filtrarPresenca() {
-            const dataFiltro = document.getElementById('filtroData').value;
-            const colaboradores = carregarColaboradores();
-            atualizarTabelaPresenca(colaboradores, dataFiltro);
-        }
-
-        // Função para cadastrar novo colaborador
-        document.getElementById('cadastroForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const colaborador = {
-                matricula: document.getElementById('matricula').value,
-                nome: document.getElementById('nome').value,
-                dataAdmissao: document.getElementById('dataAdmissao').value,
-                pis: document.getElementById('pis').value
-            };
-
-            let colaboradores = carregarColaboradores();
-            colaboradores.push(colaborador);
-            salvarColaboradores(colaboradores);
-
-            atualizarTabelaPresenca(colaboradores, document.getElementById('filtroData').value);
-            this.reset();
-        });
-
-        // Função para remover colaborador
-        document.getElementById('remocaoForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const matriculaRemocao = document.getElementById('matriculaRemocao').value;
-
-            let colaboradores = carregarColaboradores();
-            colaboradores = colaboradores.filter(c => c.matricula !== matriculaRemocao);
-            salvarColaboradores(colaboradores);
-
-            atualizarTabelaPresenca(colaboradores, document.getElementById('filtroData').value);
-            this.reset();
-        });
-
-        // Função para calcular e exibir o total de presenças
-        function atualizarTotalPresencas() {
-            const presencas = carregarPresencas();
-            let total = 0;
-
-            for (let data in presencas) {
-                for (let matricula in presencas[data]) {
-                    if (presencas[data][matricula]) {
-                        total++;
-                    }
+                // Adicione as presenças para cada dia
+                for (let data in colaborador.presencas) {
+                    let celula = linha.insertCell();
+                    celula.textContent = colaborador.presencas[data] ? "OK" : "X";
                 }
-            }
 
-            document.getElementById('totalPresencas').textContent = `Total de Presenças: ${total}`;
+                // Adicione o total de presenças
+                let totalPresencas = calcularTotalPresencas(colaborador.presencas);
+                linha.insertCell().textContent = totalPresencas;
+            });
         }
 
-        // Carregar colaboradores e atualizar a tabela ao iniciar a página
-        document.addEventListener('DOMContentLoaded', function() {
-            const colaboradores = carregarColaboradores();
-            const dataAtual = new Date().toISOString().split('T')[0];
-            document.getElementById('filtroData').value = dataAtual;
-            atualizarTabelaPresenca(colaboradores, dataAtual);
-        });
+        // Chame a função para preencher a tabela
+        preencherTabela();
     </script>
 </body>
 </html>
