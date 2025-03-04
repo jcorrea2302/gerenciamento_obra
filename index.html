@@ -3,106 +3,287 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciamento de Obra</title>
+    <title>Gestão de Colaboradores</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 20px;
-            background-color: #f4f4f4;
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
         }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
         }
-        th {
-            background-color: #007bff;
-            color: white;
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
     </style>
 </head>
-<body>
-    <h1>Gerenciamento de Obra</h1>
-    <table id="tabelaColaboradores">
-        <thead>
-            <tr>
-                <th>Matrícula</th>
-                <th>Nome</th>
-                <th>Função</th>
-                <!-- Adicione aqui as datas do mês de fevereiro -->
-                <th>01/02</th>
-                <th>02/02</th>
-                <th>03/02</th>
-                <!-- Continue até 28/02 -->
-                <th>28/02</th>
-                <th>Total Presenças</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Os dados serão carregados aqui -->
-        </tbody>
-    </table>
+<body 
+    x-data="app()" 
+    class="bg-gray-50 font-sans antialiased text-gray-900"
+>
+    <!-- Login Screen -->
+    <div 
+        x-show="currentScreen === 'login'" 
+        class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200"
+    >
+        <div class="w-full max-w-md">
+            <div class="bg-white shadow-2xl rounded-2xl overflow-hidden">
+                <div class="p-8">
+                    <h2 class="text-3xl font-bold text-center mb-6 text-gray-800">Gestão de Obra</h2>
+                    <form @submit.prevent="login">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="username">
+                                Usuário
+                            </label>
+                            <input 
+                                x-model="loginUsername"
+                                class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                id="username" 
+                                type="text" 
+                                required
+                            >
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
+                                Senha
+                            </label>
+                            <input 
+                                x-model="loginPassword"
+                                class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                id="password" 
+                                type="password" 
+                                required
+                            >
+                        </div>
+                        <button 
+                            type="submit" 
+                            class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
+                        >
+                            Entrar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div 
+        x-show="currentScreen === 'dashboard'" 
+        class="min-h-screen bg-gray-100"
+    >
+        <nav class="bg-white shadow-md">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex">
+                        <div class="flex-shrink-0 flex items-center">
+                            <h1 class="text-2xl font-bold text-gray-800">Gestão de Obra</h1>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <button 
+                            @click="logout"
+                            class="text-red-500 hover:text-red-700 font-semibold"
+                        >
+                            Sair
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div 
+                    @click="changeScreen('cadastro')"
+                    class="bg-white shadow-lg rounded-2xl p-6 cursor-pointer hover:shadow-xl transition duration-300 ease-in-out transform hover:-translate-y-2"
+                >
+                    <h2 class="text-xl font-semibold text-blue-600 mb-4">Cadastro</h2>
+                    <p class="text-gray-600">Cadastrar novos colaboradores</p>
+                </div>
+                <div 
+                    @click="changeScreen('efetivo')"
+                    class="bg-white shadow-lg rounded-2xl p-6 cursor-pointer hover:shadow-xl transition duration-300 ease-in-out transform hover:-translate-y-2"
+                >
+                    <h2 class="text-xl font-semibold text-green-600 mb-4">Efetivo</h2>
+                    <p class="text-gray-600">Gerenciar colaboradores ativos</p>
+                </div>
+                <div 
+                    @click="changeScreen('desligamento')"
+                    class="bg-white shadow-lg rounded-2xl p-6 cursor-pointer hover:shadow-xl transition duration-300 ease-in-out transform hover:-translate-y-2"
+                >
+                    <h2 class="text-xl font-semibold text-red-600 mb-4">Desligamento</h2>
+                    <p class="text-gray-600">Colaboradores desligados</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Cadastro Screen -->
+    <div 
+        x-show="currentScreen === 'cadastro'" 
+        class="min-h-screen bg-gray-100 p-6"
+    >
+        <div class="max-w-4xl mx-auto bg-white shadow-lg rounded-2xl overflow-hidden">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Cadastro de Colaboradores</h2>
+                    <button 
+                        @click="changeScreen('dashboard')"
+                        class="text-blue-500 hover:text-blue-700 font-semibold"
+                    >
+                        Voltar
+                    </button>
+                </div>
+                <form @submit.prevent="cadastrarColaborador">
+                    <div class="grid grid-cols-2 gap-4">
+                        <input 
+                            x-model="novoColaborador.matricula"
+                            placeholder="Matrícula"
+                            class="border rounded-lg p-2"
+                            required
+                        >
+                        <input 
+                            x-model="novoColaborador.nome"
+                            placeholder="Nome Completo"
+                            class="border rounded-lg p-2"
+                            required
+                        >
+                        <input 
+                            x-model="novoColaborador.funcao"
+                            placeholder="Função"
+                            class="border rounded-lg p-2"
+                            required
+                        >
+                        <input 
+                            x-model="novoColaborador.dataAdmissao"
+                            type="date"
+                            class="border rounded-lg p-2"
+                            required
+                        >
+                        <input 
+                            x-model="novoColaborador.cpf"
+                            placeholder="CPF"
+                            class="border rounded-lg p-2"
+                            required
+                        >
+                        <input 
+                            x-model="novoColaborador.rg"
+                            placeholder="RG"
+                            class="border rounded-lg p-2"
+                            required
+                        >
+                        <input 
+                            x-model="novoColaborador.pis"
+                            placeholder="PIS"
+                            class="border rounded-lg p-2"
+                            required
+                        >
+                    </div>
+                    <div class="mt-4 text-right">
+                        <button 
+                            type="submit"
+                            class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                        >
+                            Cadastrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // Exemplo de dados dos colaboradores
-        const colaboradores = [
-            {
-                matricula: "123",
-                nome: "João Silva",
-                funcao: "Engenheiro",
-                presencas: {
-                    "01/02": true,
-                    "02/02": false,
-                    "03/02": true,
-                    // Continue até 28/02
-                    "28/02": true
-                }
-            },
-            // Adicione mais colaboradores aqui
-        ];
+        function app() {
+            return {
+                currentScreen: 'login',
+                loginUsername: '',
+                loginPassword: '',
+                colaboradores: [],
+                novoColaborador: {
+                    matricula: '',
+                    nome: '',
+                    funcao: '',
+                    dataAdmissao: '',
+                    cpf: '',
+                    rg: '',
+                    pis: '',
+                    status: 'ativo'
+                },
 
-        // Função para calcular o total de presenças
-        function calcularTotalPresencas(presencas) {
-            let total = 0;
-            for (let data in presencas) {
-                if (presencas[data]) {
-                    total++;
+                init() {
+                    // Load existing employees from localStorage
+                    const savedColaboradores = localStorage.getItem('colaboradores');
+                    if (savedColaboradores) {
+                        this.colaboradores = JSON.parse(savedColaboradores);
+                    }
+                },
+
+                login() {
+                    if (this.loginUsername === 'admin' && this.loginPassword === 'admin') {
+                        this.currentScreen = 'dashboard';
+                    } else {
+                        alert('Usuário ou senha incorretos');
+                    }
+                },
+
+                logout() {
+                    this.currentScreen = 'login';
+                    this.loginUsername = '';
+                    this.loginPassword = '';
+                },
+
+                changeScreen(screen) {
+                    this.currentScreen = screen;
+                },
+
+                cadastrarColaborador() {
+                    // Add new employee
+                    this.colaboradores.push({...this.novoColaborador});
+                    
+                    // Save to localStorage
+                    localStorage.setItem('colaboradores', JSON.stringify(this.colaboradores));
+                    
+                    // Reset form
+                    this.novoColaborador = {
+                        matricula: '',
+                        nome: '',
+                        funcao: '',
+                        dataAdmissao: '',
+                        cpf: '',
+                        rg: '',
+                        pis: '',
+                        status: 'ativo'
+                    };
+
+                    // Show success message
+                    alert('Colaborador cadastrado com sucesso!');
+                },
+
+                getColaboradoresAtivos() {
+                    return this.colaboradores.filter(c => c.status === 'ativo');
+                },
+
+                getColaboradoresDesligados() {
+                    return this.colaboradores.filter(c => c.status === 'desligado');
+                },
+
+                desligarColaborador(matricula) {
+                    const index = this.colaboradores.findIndex(c => c.matricula === matricula);
+                    if (index !== -1) {
+                        this.colaboradores[index].status = 'desligado';
+                        this.colaboradores[index].dataDemissao = new Date().toISOString().split('T')[0];
+                        localStorage.setItem('colaboradores', JSON.stringify(this.colaboradores));
+                    }
                 }
             }
-            return total;
         }
-
-        // Função para preencher a tabela
-        function preencherTabela() {
-            const tabela = document.getElementById('tabelaColaboradores').getElementsByTagName('tbody')[0];
-            tabela.innerHTML = '';
-
-            colaboradores.forEach(colaborador => {
-                let linha = tabela.insertRow();
-                linha.insertCell(0).textContent = colaborador.matricula;
-                linha.insertCell(1).textContent = colaborador.nome;
-                linha.insertCell(2).textContent = colaborador.funcao;
-
-                // Adicione as presenças para cada dia
-                for (let data in colaborador.presencas) {
-                    let celula = linha.insertCell();
-                    celula.textContent = colaborador.presencas[data] ? "OK" : "X";
-                }
-
-                // Adicione o total de presenças
-                let totalPresencas = calcularTotalPresencas(colaborador.presencas);
-                linha.insertCell().textContent = totalPresencas;
-            });
-        }
-
-        // Chame a função para preencher a tabela
-        preencherTabela();
     </script>
 </body>
 </html>
