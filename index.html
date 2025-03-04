@@ -1,289 +1,408 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão de Colaboradores</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <title>Gestão de Obras</title>
     <style>
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
         }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
+        .container {
+            width: 90%;
+            margin: 0 auto;
+            padding: 20px;
         }
-        ::-webkit-scrollbar-thumb {
-            background: #888;
+        .tabs {
+            display: flex;
+            background-color: #333;
+        }
+        .tabs button {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .tabs button:hover {
+            background-color: #575757;
+        }
+        .tabs button.active {
+            background-color: #4CAF50;
+        }
+        .tabs button:disabled {
+            background-color: #999;
+            cursor: not-allowed;
+        }
+        .tab-content {
+            display: none;
+            background-color: white;
+            padding: 20px;
+            border-radius: 0 0 5px 5px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .login-form, .cadastro-form {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .login-form input, .cadastro-form input, .filtro-frequencia {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
             border-radius: 4px;
+            box-sizing: border-box;
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #555;
+        .login-form button, .cadastro-form button, .remover-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .remover-btn {
+            background-color: #f44336;
+        }
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .cadastro-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .full-width {
+            grid-column: span 2;
+        }
+        .database-table, .frequencia-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .database-table th, .database-table td,
+        .frequencia-table th, .frequencia-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .database-table th, .frequencia-table th {
+            background-color: #f2f2f2;
+        }
+        .resumo-frequencia {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .resumo-item {
+            text-align: center;
         }
     </style>
 </head>
-<body 
-    x-data="app()" 
-    class="bg-gray-50 font-sans antialiased text-gray-900"
->
-    <!-- Login Screen -->
-    <div 
-        x-show="currentScreen === 'login'" 
-        class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200"
-    >
-        <div class="w-full max-w-md">
-            <div class="bg-white shadow-2xl rounded-2xl overflow-hidden">
-                <div class="p-8">
-                    <h2 class="text-3xl font-bold text-center mb-6 text-gray-800">Gestão de Obra</h2>
-                    <form @submit.prevent="login">
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="username">
-                                Usuário
-                            </label>
-                            <input 
-                                x-model="loginUsername"
-                                class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                                id="username" 
-                                type="text" 
-                                required
-                            >
-                        </div>
-                        <div class="mb-6">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
-                                Senha
-                            </label>
-                            <input 
-                                x-model="loginPassword"
-                                class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                                id="password" 
-                                type="password" 
-                                required
-                            >
-                        </div>
-                        <button 
-                            type="submit" 
-                            class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
-                        >
-                            Entrar
-                        </button>
-                    </form>
+<body>
+    <div class="container">
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="openTab('login')">Login</button>
+            <button class="tab-btn" onclick="openTab('cadastros')" id="cadastrosTab" disabled>Cadastros</button>
+            <button class="tab-btn" onclick="openTab('frequencia')" id="frequenciaTab" disabled>Frequência</button>
+            <button class="tab-btn" onclick="openTab('database')" id="databaseTab" disabled>Banco de Dados</button>
+            <button class="tab-btn" onclick="openTab('desligamentos')" id="desligamentosTab" disabled>Desligamentos</button>
+        </div>
+
+        <!-- Login Tab -->
+        <div id="login" class="tab-content active">
+            <div class="login-form">
+                <h2>Login</h2>
+                <input type="text" id="username" placeholder="Usuário">
+                <input type="password" id="password" placeholder="Senha">
+                <button onclick="realizarLogin()">Entrar</button>
+                <div id="errorMessage" class="error-message"></div>
+            </div>
+        </div>
+
+        <!-- Cadastros Tab -->
+        <div id="cadastros" class="tab-content">
+            <h2>Cadastro de Colaboradores</h2>
+            <form class="cadastro-form" id="colaboradorForm">
+                <input type="text" id="matricula" placeholder="Matrícula" required>
+                <input type="text" id="nome" placeholder="Nome Completo" required>
+                <input type="text" id="funcao" placeholder="Função" required>
+                <input type="date" id="dataAdmissao" placeholder="Data de Admissão" required>
+                <input type="text" id="pis" placeholder="PIS" required>
+                <input type="text" id="cpf" placeholder="CPF" required>
+                <input type="text" id="rg" placeholder="RG" required>
+                <div class="full-width">
+                    <button type="submit" onclick="cadastrarColaborador(event)">Cadastrar Colaborador</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Frequência Tab -->
+        <div id="frequencia" class="tab-content">
+            <h2>Lista de Frequência</h2>
+            <div>
+                <select id="mesFrequencia" class="filtro-frequencia">
+                    <option value="">Selecione o Mês</option>
+                    <option value="01">Janeiro</option>
+                    <option value="02">Fevereiro</option>
+                    <option value="03">Março</option>
+                    <option value="04">Abril</option>
+                    <option value="05">Maio</option>
+                    <option value="06">Junho</option>
+                    <option value="07">Julho</option>
+                    <option value="08">Agosto</option>
+                    <option value="09">Setembro</option>
+                    <option value="10">Outubro</option>
+                    <option value="11">Novembro</option>
+                    <option value="12">Dezembro</option>
+                </select>
+                <input type="date" id="dataFrequencia" class="filtro-frequencia">
+                <button onclick="filtrarFrequencia()">Filtrar</button>
+            </div>
+            <table class="frequencia-table" id="tabelaFrequencia">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Matrícula</th>
+                        <th>Data</th>
+                        <th>Status</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="corpoTabelaFrequencia">
+                    <!-- Linhas de frequência serão adicionadas aqui -->
+                </tbody>
+            </table>
+            <div class="resumo-frequencia" id="resumoFrequencia">
+                <div class="resumo-item">
+                    <strong>Presentes</strong>
+                    <div id="totalPresentes">0</div>
+                </div>
+                <div class="resumo-item">
+                    <strong>Atestados</strong>
+                    <div id="totalAtestados">0</div>
+                </div>
+                <div class="resumo-item">
+                    <strong>Faltas</strong>
+                    <div id="totalFaltas">0</div>
+                </div>
+                <div class="resumo-item">
+                    <strong>Afastados</strong>
+                    <div id="totalAfastados">0</div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Dashboard -->
-    <div 
-        x-show="currentScreen === 'dashboard'" 
-        class="min-h-screen bg-gray-100"
-    >
-        <nav class="bg-white shadow-md">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <div class="flex">
-                        <div class="flex-shrink-0 flex items-center">
-                            <h1 class="text-2xl font-bold text-gray-800">Gestão de Obra</h1>
-                        </div>
-                    </div>
-                    <div class="flex items-center">
-                        <button 
-                            @click="logout"
-                            class="text-red-500 hover:text-red-700 font-semibold"
-                        >
-                            Sair
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </nav>
+        <!-- Banco de Dados Tab -->
+        <div id="database" class="tab-content">
+            <h2>Banco de Dados de Colaboradores</h2>
+            <table class="database-table" id="colaboradoresTable">
+                <thead>
+                    <tr>
+                        <th>Matrícula</th>
+                        <th>Nome</th>
+                        <th>Função</th>
+                        <th>Data Admissão</th>
+                        <th>PIS</th>
+                        <th>CPF</th>
+                        <th>RG</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="colaboradoresTbody">
+                    <!-- Colaboradores serão adicionados aqui dinamicamente -->
+                </tbody>
+            </table>
+        </div>
 
-        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div 
-                    @click="changeScreen('cadastro')"
-                    class="bg-white shadow-lg rounded-2xl p-6 cursor-pointer hover:shadow-xl transition duration-300 ease-in-out transform hover:-translate-y-2"
-                >
-                    <h2 class="text-xl font-semibold text-blue-600 mb-4">Cadastro</h2>
-                    <p class="text-gray-600">Cadastrar novos colaboradores</p>
-                </div>
-                <div 
-                    @click="changeScreen('efetivo')"
-                    class="bg-white shadow-lg rounded-2xl p-6 cursor-pointer hover:shadow-xl transition duration-300 ease-in-out transform hover:-translate-y-2"
-                >
-                    <h2 class="text-xl font-semibold text-green-600 mb-4">Efetivo</h2>
-                    <p class="text-gray-600">Gerenciar colaboradores ativos</p>
-                </div>
-                <div 
-                    @click="changeScreen('desligamento')"
-                    class="bg-white shadow-lg rounded-2xl p-6 cursor-pointer hover:shadow-xl transition duration-300 ease-in-out transform hover:-translate-y-2"
-                >
-                    <h2 class="text-xl font-semibold text-red-600 mb-4">Desligamento</h2>
-                    <p class="text-gray-600">Colaboradores desligados</p>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Cadastro Screen -->
-    <div 
-        x-show="currentScreen === 'cadastro'" 
-        class="min-h-screen bg-gray-100 p-6"
-    >
-        <div class="max-w-4xl mx-auto bg-white shadow-lg rounded-2xl overflow-hidden">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Cadastro de Colaboradores</h2>
-                    <button 
-                        @click="changeScreen('dashboard')"
-                        class="text-blue-500 hover:text-blue-700 font-semibold"
-                    >
-                        Voltar
-                    </button>
-                </div>
-                <form @submit.prevent="cadastrarColaborador">
-                    <div class="grid grid-cols-2 gap-4">
-                        <input 
-                            x-model="novoColaborador.matricula"
-                            placeholder="Matrícula"
-                            class="border rounded-lg p-2"
-                            required
-                        >
-                        <input 
-                            x-model="novoColaborador.nome"
-                            placeholder="Nome Completo"
-                            class="border rounded-lg p-2"
-                            required
-                        >
-                        <input 
-                            x-model="novoColaborador.funcao"
-                            placeholder="Função"
-                            class="border rounded-lg p-2"
-                            required
-                        >
-                        <input 
-                            x-model="novoColaborador.dataAdmissao"
-                            type="date"
-                            class="border rounded-lg p-2"
-                            required
-                        >
-                        <input 
-                            x-model="novoColaborador.cpf"
-                            placeholder="CPF"
-                            class="border rounded-lg p-2"
-                            required
-                        >
-                        <input 
-                            x-model="novoColaborador.rg"
-                            placeholder="RG"
-                            class="border rounded-lg p-2"
-                            required
-                        >
-                        <input 
-                            x-model="novoColaborador.pis"
-                            placeholder="PIS"
-                            class="border rounded-lg p-2"
-                            required
-                        >
-                    </div>
-                    <div class="mt-4 text-right">
-                        <button 
-                            type="submit"
-                            class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-                        >
-                            Cadastrar
-                        </button>
-                    </div>
-                </form>
-            </div>
+        <!-- Desligamentos Tab -->
+        <div id="desligamentos" class="tab-content">
+            <h2>Colaboradores Desligados</h2>
+            <table class="database-table" id="desligadosTable">
+                <thead>
+                    <tr>
+                        <th>Matrícula</th>
+                        <th>Nome</th>
+                        <th>Função</th>
+                        <th>Data Admissão</th>
+                        <th>Data Desligamento</th>
+                    </tr>
+                </thead>
+                <tbody id="desligadosTbody">
+                    <!-- Colaboradores desligados serão adicionados aqui -->
+                </tbody>
+            </table>
         </div>
     </div>
 
     <script>
-        function app() {
-            return {
-                currentScreen: 'login',
-                loginUsername: '',
-                loginPassword: '',
-                colaboradores: [],
-                novoColaborador: {
-                    matricula: '',
-                    nome: '',
-                    funcao: '',
-                    dataAdmissao: '',
-                    cpf: '',
-                    rg: '',
-                    pis: '',
-                    status: 'ativo'
-                },
+        // Arrays para armazenar dados
+        let colaboradores = [];
+        let frequencias = [];
+        let desligados = [];
 
-                init() {
-                    // Load existing employees from localStorage
-                    const savedColaboradores = localStorage.getItem('colaboradores');
-                    if (savedColaboradores) {
-                        this.colaboradores = JSON.parse(savedColaboradores);
-                    }
-                },
+        function realizarLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('errorMessage');
+            const tabs = ['cadastrosTab', 'frequenciaTab', 'databaseTab', 'desligamentosTab'];
 
-                login() {
-                    if (this.loginUsername === 'admin' && this.loginPassword === 'admin') {
-                        this.currentScreen = 'dashboard';
-                    } else {
-                        alert('Usuário ou senha incorretos');
-                    }
-                },
-
-                logout() {
-                    this.currentScreen = 'login';
-                    this.loginUsername = '';
-                    this.loginPassword = '';
-                },
-
-                changeScreen(screen) {
-                    this.currentScreen = screen;
-                },
-
-                cadastrarColaborador() {
-                    // Add new employee
-                    this.colaboradores.push({...this.novoColaborador});
-                    
-                    // Save to localStorage
-                    localStorage.setItem('colaboradores', JSON.stringify(this.colaboradores));
-                    
-                    // Reset form
-                    this.novoColaborador = {
-                        matricula: '',
-                        nome: '',
-                        funcao: '',
-                        dataAdmissao: '',
-                        cpf: '',
-                        rg: '',
-                        pis: '',
-                        status: 'ativo'
-                    };
-
-                    // Show success message
-                    alert('Colaborador cadastrado com sucesso!');
-                },
-
-                getColaboradoresAtivos() {
-                    return this.colaboradores.filter(c => c.status === 'ativo');
-                },
-
-                getColaboradoresDesligados() {
-                    return this.colaboradores.filter(c => c.status === 'desligado');
-                },
-
-                desligarColaborador(matricula) {
-                    const index = this.colaboradores.findIndex(c => c.matricula === matricula);
-                    if (index !== -1) {
-                        this.colaboradores[index].status = 'desligado';
-                        this.colaboradores[index].dataDemissao = new Date().toISOString().split('T')[0];
-                        localStorage.setItem('colaboradores', JSON.stringify(this.colaboradores));
-                    }
-                }
+            if (username === 'admin' && password === 'admin') {
+                errorMessage.textContent = '';
+                tabs.forEach(tab => document.getElementById(tab).disabled = false);
+                openTab('cadastros');
+            } else {
+                errorMessage.textContent = 'Usuário ou senha inválidos';
+                tabs.forEach(tab => document.getElementById(tab).disabled = true);
             }
         }
-    </script>
-</body>
-</html>
+
+        function openTab(tabName) {
+            // Remove active class from all tabs and tab contents
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Add active class to selected tab and content
+            document.querySelector(`.tab-btn[onclick="openTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        function cadastrarColaborador(event) {
+            event.preventDefault();
+            
+            // Capturar valores do formulário
+            const matricula = document.getElementById('matricula').value;
+            const nome = document.getElementById('nome').value;
+            const funcao = document.getElementById('funcao').value;
+            const dataAdmissao = document.getElementById('dataAdmissao').value;
+            const pis = document.getElementById('pis').value;
+            const cpf = document.getElementById('cpf').value;
+            const rg = document.getElementById('rg').value;
+
+            // Criar objeto colaborador
+            const colaborador = {
+                matricula,
+                nome,
+                funcao,
+                dataAdmissao,
+                pis,
+                cpf,
+                rg
+            };
+
+            // Adicionar ao array de colaboradores
+            colaboradores.push(colaborador);
+
+            // Adicionar à tabela de banco de dados
+            const tbody = document.getElementById('colaboradoresTbody');
+            const newRow = tbody.insertRow();
+            newRow.innerHTML = `
+                <td>${matricula}</td>
+                <td>${nome}</td>
+                <td>${funcao}</td>
+                <td>${dataAdmissao}</td>
+                <td>${pis}</td>
+                <td>${cpf}</td>
+                <td>${rg}</td>
+                <td>
+                    <button onclick="removerColaborador('${matricula}')" class="remover-btn">Desligar</button>
+                </td>
+            `;
+
+            // Limpar formulário
+            document.getElementById('colaboradorForm').reset();
+
+            // Ir para aba de banco de dados
+            openTab('database');
+        }
+
+        function removerColaborador(matricula) {
+            // Encontrar o colaborador
+            const colaborador = colaboradores.find(c => c.matricula === matricula);
+            
+            if (colaborador) {
+                // Remover da lista de colaboradores
+                colaboradores = colaboradores.filter(c => c.matricula !== matricula);
+                
+                // Adicionar à lista de desligados
+                const desligamento = {
+                    ...colaborador,
+                    dataDesligamento: new Date().toISOString().split('T')[0]
+                };
+                desligados.push(desligamento);
+
+                // Atualizar tabela de colaboradores
+                const colaboradoresTbody = document.getElementById('colaboradoresTbody');
+                const rows = colaboradoresTbody.getElementsByTagName('tr');
+                for (let row of rows) {
+                    if (row.cells[0].textContent === matricula) {
+                        row.remove();
+                        break;
+                    }
+                }
+
+                // Atualizar tabela de desligados
+                const desligadosTbody = document.getElementById('desligadosTbody');
+                const newRow = desligadosTbody.insertRow();
+                newRow.innerHTML = `
+                    <td>${desligamento.matricula}</td>
+                    <td>${desligamento.nome}</td>
+                    <td>${desligamento.funcao}</td>
+                    <td>${desligamento.dataAdmissao}</td>
+                    <td>${desligamento.dataDesligamento}</td>
+                `;
+
+                // Ir para aba de desligamentos
+                openTab('desligamentos');
+            }
+        }
+
+        function registrarFrequencia(matricula, nome) {
+            const data = document.getElementById('dataFrequencia').value;
+            const status = prompt(`Selecione o status para ${nome}:
+            1. Presente
+            2. Falta
+            3. Atestado
+            4. Afastado
+            5. Folga
+            6. Exame
+            7. Desligado`, 'Presente');
+
+            const statusMap = {
+                '1': 'Presente',
+                '2': 'Falta',
+                '3': 'Atestado',
+                '4': 'Afastado',
+                '5': 'Folga',
+                '6': 'Exame',
+                '7': 'Desligado'
+            };
+
+            const statusSelecionado = statusMap[status] || 'Presente';
+
+            const frequencia = {
+                matricula,
+                nome,
+                data,
+                status: statusSele
