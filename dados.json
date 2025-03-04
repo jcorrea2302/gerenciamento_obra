@@ -1,0 +1,17 @@
+[
+    {
+        "nome": "Carlos Souza",
+        "funcao": "Eletricista",
+        "status": "Presente"
+    },
+    {
+        "nome": "Ana Oliveira",
+        "funcao": "Técnica de Segurança",
+        "status": "Falta"
+    },
+    {
+        "nome": "Roberto Lima",
+        "funcao": "Engenheiro",
+        "status": "Atestado"
+    }
+]
