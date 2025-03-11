@@ -165,26 +165,27 @@
             text-align: center;
         }
 
-        h2 {
-            color: var(--text-primary);
+        .frequencia-controls {
+            display: flex;
+            gap: 15px;
             margin-bottom: 20px;
         }
 
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 500;
+        .status-select {
+            width: 100%;
+            padding: 5px;
         }
 
-        .status-presente {
-            background-color: var(--success-color);
-            color: white;
-        }
+        .status-presente { background-color: var(--success-color); color: white; }
+        .status-falta { background-color: var(--danger-color); color: white; }
+        .status-atestado { background-color: #f59e0b; color: white; }
+        .status-exame { background-color: #3b82f6; color: white; }
+        .status-ferias { background-color: #10b981; color: white; }
+        .status-folga { background-color: #8b5cf6; color: white; }
 
-        .status-falta {
-            background-color: var(--danger-color);
-            color: white;
+        h2 {
+            color: var(--text-primary);
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -241,34 +242,40 @@
 
         <div id="frequencia" class="content-panel">
             <h2>Registro de Frequência</h2>
-            <div>
-                <select class="form-input" id="filtroMes">
-                    <option value="">Selecione o Mês</option>
-                    <option value="01">Janeiro</option>
-                    <option value="02">Fevereiro</option>
-                    <option value="03">Março</option>
-                    <option value="04">Abril</option>
-                    <option value="05">Maio</option>
-                    <option value="06">Junho</option>
-                    <option value="07">Julho</option>
-                    <option value="08">Agosto</option>
-                    <option value="09">Setembro</option>
-                    <option value="10">Outubro</option>
-                    <option value="11">Novembro</option>
-                    <option value="12">Dezembro</option>
+            <div class="frequencia-controls">
+                <input type="date" id="dataFrequencia" class="form-input" onchange="sistemaGestao.carregarFrequenciaDia(this.value)">
+                <select id="filtroColaborador" class="form-input">
+                    <option value="">Todos os Colaboradores</option>
                 </select>
-                <table class="data-table" id="tabelaFrequencia">
-                    <thead>
-                        <tr>
-                            <th>Matrícula</th>
-                            <th>Nome</th>
-                            <th>Função</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="corpoTabelaFrequencia"></tbody>
-                </table>
             </div>
+            <table class="data-table" id="tabelaFrequencia">
+                <thead>
+                    <tr>
+                        <th>Matrícula</th>
+                        <th>Nome</th>
+                        <th>Função</th>
+                        <th>Status</th>
+                        <th>Observação</th>
+                    </tr>
+                </thead>
+                <tbody id="corpoTabelaFrequencia"></tbody>
+            </table>
+        </div>
+
+        <div id="desligamento" class="content-panel">
+            <h2>Colaboradores Desligados</h2>
+            <table class="data-table" id="tabelaDesligados">
+                <thead>
+                    <tr>
+                        <th>Matrícula</th>
+                        <th>Nome</th>
+                        <th>Função</th>
+                        <th>Data Admissão</th>
+                        <th>Data Desligamento</th>
+                    </tr>
+                </thead>
+                <tbody id="corpoTabelaDesligados"></tbody>
+            </table>
         </div>
 
         <div id="materiais" class="content-panel">
@@ -292,11 +299,6 @@
                 <tbody id="corpoTabelaMateriais"></tbody>
             </table>
         </div>
-
-        <div id="cronograma" class="content-panel">
-            <h2>Cronograma de Obras</h2>
-            <!-- Implementação futura do cronograma -->
-        </div>
     </div>
 
     <div id="modalConfirmacao" class="modal">
@@ -306,227 +308,3 @@
             <button class="primary-button" onclick="fecharModal()">OK</button>
         </div>
     </div>
-
-    <script>
-        class SistemaGestaoObras {
-            constructor() {
-                this.colaboradores = [];
-                this.frequencias = [];
-                this.materiais = [];
-                this.initEventListeners();
-            }
-
-            initEventListeners() {
-                document.getElementById('loginForm').addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.realizarLogin();
-                });
-
-                document.getElementById('cadastroForm').addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.cadastrarColaborador();
-                });
-
-                document.getElementById('materialForm')?.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.cadastrarMaterial();
-                });
-            }
-
-            realizarLogin() {
-                const username = document.getElementById('username').value;
-                const password = document.getElementById('password').value;
-
-                if (username === 'admin' && password === 'admin123') {
-                    this.habilitarAbas();
-                    this.abrirAba('cadastro');
-                } else {
-                    this.mostrarModal('Credenciais inválidas. Tente novamente.');
-                }
-            }
-
-            habilitarAbas() {
-                const abas = ['navCadastro', 'navFrequencia', 'navDatabase', 'navDesligamento', 'navMateriais', 'navCronograma'];
-                abas.forEach(abaId => {
-                    document.getElementById(abaId).disabled = false;
-                });
-            }
-
-            abrirAba(nomeAba) {
-                document.querySelectorAll('.content-panel').forEach(panel => {
-                    panel.classList.remove('active');
-                });
-
-                document.querySelectorAll('.nav-button').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-
-                document.getElementById(nomeAba).classList.add('active');
-                document.querySelector(`[onclick="openTab('${nomeAba}')"]`).classList.add('active');
-            }
-
-            cadastrarColaborador() {
-                const dadosColaborador = this.coletarDadosColaborador();
-                
-                if (!this.validarDadosColaborador(dadosColaborador)) {
-                    return;
-                }
-
-                this.colaboradores.push(dadosColaborador);
-                this.atualizarTabelaColaboradores();
-                this.atualizarTabelaFrequencia();
-                this.mostrarModal('Colaborador cadastrado com sucesso!');
-                this.limparFormulario('cadastroForm');
-                this.abrirAba('database');
-            }
-
-            cadastrarMaterial() {
-                const material = {
-                    id: Date.now(),
-                    nome: document.getElementById('nomeMaterial').value,
-                    quantidade: parseFloat(document.getElementById('quantidade').value),
-                    valorUnitario: parseFloat(document.getElementById('valorUnitario').value),
-                    valorTotal: function() {
-                        return this.quantidade * this.valorUnitario;
-                    }
-                };
-
-                this.materiais.push(material);
-                this.atualizarTabelaMateriais();
-                this.limparFormulario('materialForm');
-                this.mostrarModal('Material cadastrado com sucesso!');
-            }
-
-            atualizarTabelaColaboradores() {
-                const tbody = document.getElementById('corpoTabelaColaboradores');
-                tbody.innerHTML = '';
-
-                this.colaboradores.forEach(colaborador => {
-                    const linha = tbody.insertRow();
-                    linha.innerHTML = `
-                        <td>${colaborador.matricula}</td>
-                        <td>${colaborador.nome}</td>
-                        <td>${colaborador.funcao}</td>
-                        <td>${colaborador.dataAdmissao}</td>
-                        <td>
-                            <button class="action-button" onclick="sistemaGestao.registrarFrequencia('${colaborador.matricula}')">Registrar Frequência</button>
-                        </td>
-                    `;
-                });
-            }
-
-            atualizarTabelaFrequencia() {
-                const tbody = document.getElementById('corpoTabelaFrequencia');
-                tbody.innerHTML = '';
-
-                this.colaboradores.forEach(colaborador => {
-                    const linha = tbody.insertRow();
-                    linha.innerHTML = `
-                        <td>${colaborador.matricula}</td>
-                        <td>${colaborador.nome}</td>
-                        <td>${colaborador.funcao}</td>
-                        <td>
-                            <button class="action-button" onclick="sistemaGestao.registrarFrequencia('${colaborador.matricula}')">Registrar Frequência</button>
-                        </td>
-                    `;
-                });
-            }
-
-            atualizarTabelaMateriais() {
-                const tbody = document.getElementById('corpoTabelaMateriais');
-                tbody.innerHTML = '';
-
-                this.materiais.forEach(material => {
-                    const linha = tbody.insertRow();
-                    linha.innerHTML = `
-                        <td>${material.nome}</td>
-                        <td>${material.quantidade}</td>
-                        <td>R$ ${material.valorUnitario.toFixed(2)}</td>
-                        <td>R$ ${material.valorTotal().toFixed(2)}</td>
-                        <td>
-                            <button class="action-button" onclick="sistemaGestao.editarMaterial(${material.id})">Editar</button>
-                            <button class="action-button danger" onclick="sistemaGestao.removerMaterial(${material.id})">Remover</button>
-                        </td>
-                    `;
-                });
-            }
-
-            registrarFrequencia(matricula) {
-                const colaborador = this.colaboradores.find(c => c.matricula === matricula);
-                
-                if (colaborador) {
-                    const status = prompt(`Selecione o status para ${colaborador.nome}:
-                    1. Presente
-                    2. Falta
-                    3. Atestado
-                    4. Afastado`, 'Presente');
-
-                    const statusMap = {
-                        '1': 'Presente',
-                        '2': 'Falta',
-                        '3': 'Atestado',
-                        '4': 'Afastado'
-                    };
-
-                    const statusSelecionado = statusMap[status] || 'Presente';
-
-                    const frequencia = {
-                        matricula: colaborador.matricula,
-                        nome: colaborador.nome,
-                        data: new Date().toISOString().split('T')[0],
-                        status: statusSelecionado
-                    };
-
-                    this.frequencias.push(frequencia);
-                    this.mostrarModal(`Frequência registrada para ${colaborador.nome}: ${statusSelecionado}`);
-                }
-            }
-
-            coletarDadosColaborador() {
-                return {
-                    matricula: document.getElementById('matricula').value,
-                    nome: document.getElementById('nome').value,
-                    funcao: document.getElementById('funcao').value,
-                    dataAdmissao: document.getElementById('dataAdmissao').value,
-                    pis: document.getElementById('pis').value,
-                    cpf: document.getElementById('cpf').value,
-                    rg: document.getElementById('rg').value
-                };
-            }
-
-            validarDadosColaborador(dados) {
-                if (!dados.matricula || !dados.nome || !dados.funcao || !dados.dataAdmissao) {
-                    this.mostrarModal('Por favor, preencha todos os campos obrigatórios.');
-                    return false;
-                }
-                return true;
-            }
-
-            limparFormulario(formId) {
-                document.getElementById(formId).reset();
-            }
-
-            mostrarModal(mensagem) {
-                document.getElementById('modalMensagem').textContent = mensagem;
-                document.getElementById('modalConfirmacao').classList.add('active');
-            }
-
-            fecharModal() {
-                document.getElementById('modalConfirmacao').classList.remove('active');
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            window.sistemaGestao = new SistemaGestaoObras();
-        });
-
-        function openTab(tabName) {
-            window.sistemaGestao.abrirAba(tabName);
-        }
-
-        function fecharModal() {
-            window.sistemaGestao.fecharModal();
-        }
-    </script>
-</body>
-</html>
