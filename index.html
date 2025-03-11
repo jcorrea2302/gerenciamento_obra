@@ -18,8 +18,7 @@
     
     <!-- Toast para notificações -->
     <link href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" rel="stylesheet">
-    
-    <style>
+        <style>
         :root {
             /* Cores principais */
             --primary-color: #2563eb;
@@ -92,31 +91,47 @@
             height: 100vh;
             width: 250px;
             transition: var(--transition);
+            display: none;
         }
 
-        .sidebar-logo {
+        .system-enabled .sidebar {
+            display: block;
+        }
+
+        /* Login */
+        .login-container {
             display: flex;
+            justify-content: center;
             align-items: center;
-            gap: 0.75rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 1.5rem;
+            min-height: 100vh;
+            background-color: var(--bg-secondary);
         }
 
-        .sidebar-logo img {
-            width: 32px;
-            height: 32px;
+        .login-box {
+            background-color: var(--bg-primary);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow-md);
+            width: 100%;
+            max-width: 400px;
+            animation: fadeIn 0.5s ease;
         }
 
-        .sidebar-logo h1 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text-primary);
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
         }
 
-        /* Menu de navegação */
+        .login-header i {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        /* Navegação */
         .nav-menu {
             list-style: none;
+            margin-top: 2rem;
         }
 
         .nav-item {
@@ -126,12 +141,12 @@
         .nav-link {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
             padding: 0.75rem 1rem;
             color: var(--text-secondary);
             text-decoration: none;
             border-radius: 0.5rem;
             transition: var(--transition);
+            gap: 0.75rem;
         }
 
         .nav-link:hover,
@@ -140,17 +155,18 @@
             color: white;
         }
 
-        .nav-link i {
-            font-size: 1.25rem;
-        }
-
         /* Conteúdo principal */
         .main-content {
-            margin-left: 250px;
+            margin-left: 0;
             padding: 2rem;
+            transition: var(--transition);
         }
 
-        /* Cards do Dashboard */
+        .system-enabled .main-content {
+            margin-left: 250px;
+        }
+
+        /* Cards */
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -165,63 +181,44 @@
             box-shadow: var(--shadow);
         }
 
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
+        /* Formulários */
+        .form-group {
+            margin-bottom: 1.5rem;
         }
 
-        .card-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-primary);
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
         }
 
-        .card-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-
-        /* Tabelas */
-        .table-container {
-            background-color: var(--bg-primary);
-            padding: 1.5rem;
-            border-radius: 0.5rem;
-            box-shadow: var(--shadow);
-            margin-bottom: 2rem;
-        }
-
-        .custom-table {
+        .form-control {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: var(--transition);
         }
 
-        .custom-table th {
-            background-color: var(--bg-secondary);
-            padding: 1rem;
-            text-align: left;
-            font-weight: 600;
-        }
-
-        .custom-table td {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px var(--primary-light);
         }
 
         /* Botões */
         .btn {
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
             font-weight: 500;
             cursor: pointer;
             transition: var(--transition);
             border: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
         }
 
         .btn-primary {
@@ -233,30 +230,37 @@
             background-color: var(--primary-dark);
         }
 
-        /* Formulários */
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-
-        .form-control {
+        /* Modais */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            padding: 0.5rem;
-            border: 1px solid var(--border-color);
-            border-radius: 0.375rem;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
             background-color: var(--bg-primary);
-            color: var(--text-primary);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow-md);
+            max-width: 500px;
+            width: 90%;
         }
 
         /* Animações */
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .fade-in {
@@ -264,7 +268,7 @@
         }
     </style>
 </head>
-<body>
+    <body>
     <div class="app-wrapper">
         <!-- Sidebar -->
         <aside class="sidebar">
@@ -310,12 +314,6 @@
                         <span>Relatórios</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" onclick="openTab('configuracoes')">
-                        <i class="mdi mdi-cog"></i>
-                        <span>Configurações</span>
-                    </a>
-                </li>
             </ul>
 
             <div class="sidebar-footer">
@@ -328,8 +326,39 @@
 
         <!-- Conteúdo Principal -->
         <main class="main-content">
-            <!-- Dashboard -->
-            <div id="dashboard" class="content-panel active">
+            <!-- Login -->
+            <div id="login" class="content-panel active">
+                <div class="login-container">
+                    <div class="login-box">
+                        <div class="login-header">
+                            <i class="mdi mdi-office-building-marker"></i>
+                            <h2>Sistema de Gestão de Obras</h2>
+                        </div>
+                        <form id="loginForm" class="login-form">
+                            <div class="form-group">
+                                <label class="form-label">Usuário</label>
+                                <div class="input-group">
+                                    <i class="mdi mdi-account"></i>
+                                    <input type="text" id="username" class="form-control" placeholder="Digite seu usuário" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Senha</label>
+                                <div class="input-group">
+                                    <i class="mdi mdi-lock"></i>
+                                    <input type="password" id="password" class="form-control" placeholder="Digite sua senha" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <i class="mdi mdi-login"></i>
+                                Entrar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+                        <!-- Dashboard -->
+            <div id="dashboard" class="content-panel">
                 <div class="page-header">
                     <h2>Dashboard</h2>
                     <div class="breadcrumb">
@@ -391,9 +420,8 @@
                 </div>
             </div>
 
-            <!-- Outras seções do conteúdo -->
-            <!-- Colaboradores, Frequência, etc. -->
-            
+            <!-- Outras seções aqui... -->
+
         </main>
     </div>
 
@@ -416,202 +444,252 @@
             </div>
         </div>
     </div>
-<!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-<script>
-class SistemaGestaoObras {
-    constructor() {
-        this.colaboradores = [];
-        this.desligados = [];
-        this.frequencias = {};
-        this.materiais = [];
-        this.theme = localStorage.getItem('theme') || 'light';
-        this.initSystem();
-    }
-
-    async initSystem() {
-        this.showLoading();
-        await this.carregarDadosLocalmente();
-        this.initEventListeners();
-        this.initCharts();
-        this.updateDashboard();
-        this.applyTheme();
-        this.hideLoading();
-    }
-
-    initEventListeners() {
-        // Login
-        document.getElementById('loginForm')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.realizarLogin();
-        });
-
-        // Colaboradores
-        document.getElementById('colaboradorForm')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.cadastrarColaborador();
-        });
-
-        // Materiais
-        document.getElementById('materialForm')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.cadastrarMaterial();
-        });
-
-        // Frequência
-        document.getElementById('dataFrequencia')?.addEventListener('change', (e) => {
-            this.carregarFrequenciaDia(e.target.value);
-        });
-
-        // Tema
-        document.querySelector('.btn-theme')?.addEventListener('click', () => {
-            this.toggleTheme();
-        });
-    }
-
-    showNotification(message, type = 'success') {
-        Toastify({
-            text: message,
-            duration: 3000,
-            gravity: "top",
-            position: "right",
-            backgroundColor: type === 'success' ? 'var(--success-color)' : 'var(--danger-color)'
-        }).showToast();
-    }
-
-    showLoading() {
-        document.getElementById('loadingModal').classList.add('active');
-    }
-
-    hideLoading() {
-        document.getElementById('loadingModal').classList.remove('active');
-    }
-
-    async realizarLogin() {
-        this.showLoading();
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-
-        try {
-            // Simular delay de rede
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            if (username === 'admin' && password === 'admin123') {
-                this.showNotification('Login realizado com sucesso!');
-                this.habilitarSistema();
-            } else {
-                this.showNotification('Credenciais inválidas!', 'error');
+            <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script>
+        class SistemaGestaoObras {
+            constructor() {
+                this.colaboradores = [];
+                this.desligados = [];
+                this.frequencias = {};
+                this.materiais = [];
+                this.theme = localStorage.getItem('theme') || 'light';
+                this.initSystem();
             }
-        } catch (error) {
-            this.showNotification('Erro ao realizar login!', 'error');
-        } finally {
-            this.hideLoading();
-        }
-    }
 
-    habilitarSistema() {
-        document.querySelector('.app-wrapper').classList.add('system-enabled');
-        this.updateDashboard();
-    }
+            async initSystem() {
+                this.showLoading();
+                await this.carregarDadosLocalmente();
+                this.initEventListeners();
+                this.initCharts();
+                this.applyTheme();
+                this.hideLoading();
+            }
 
-    async cadastrarColaborador() {
-        this.showLoading();
-        try {
-            const colaborador = {
-                id: Date.now(),
-                matricula: document.getElementById('matricula').value,
-                nome: document.getElementById('nome').value,
-                funcao: document.getElementById('funcao').value,
-                dataAdmissao: document.getElementById('dataAdmissao').value,
-                status: 'ativo'
-            };
+            initEventListeners() {
+                document.getElementById('loginForm')?.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.realizarLogin();
+                });
 
-            this.colaboradores.push(colaborador);
-            await this.salvarDadosLocalmente();
-            this.updateDashboard();
-            this.showNotification('Colaborador cadastrado com sucesso!');
-            document.getElementById('colaboradorForm').reset();
-        } catch (error) {
-            this.showNotification('Erro ao cadastrar colaborador!', 'error');
-        } finally {
-            this.hideLoading();
-        }
-    }
+                document.querySelector('.btn-theme')?.addEventListener('click', () => {
+                    this.toggleTheme();
+                });
+            }
 
-    initCharts() {
-        // Gráfico de Frequência
-        const frequenciaCtx = document.getElementById('frequenciaChart');
-        if (frequenciaCtx) {
-            this.frequenciaChart = new Chart(frequenciaCtx, {
-                type: 'line',
-                data: {
-                    labels: this.getUltimos30Dias(),
-                    datasets: [{
-                        label: 'Presentes',
-                        data: this.getFrequenciaData(),
-                        borderColor: 'var(--primary-color)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        }
+            showNotification(message, type = 'success') {
+                Toastify({
+                    text: message,
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: type === 'success' ? 'var(--success-color)' : 'var(--danger-color)'
+                }).showToast();
+            }
+
+            showLoading() {
+                document.getElementById('loadingModal').classList.add('active');
+            }
+
+            hideLoading() {
+                document.getElementById('loadingModal').classList.remove('active');
+            }
+
+            async realizarLogin() {
+                this.showLoading();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                    if (username === 'admin' && password === 'admin123') {
+                        this.showNotification('Login realizado com sucesso!');
+                        this.habilitarSistema();
+                    } else {
+                        this.showNotification('Credenciais inválidas!', 'error');
                     }
+                } catch (error) {
+                    this.showNotification('Erro ao realizar login!', 'error');
+                } finally {
+                    this.hideLoading();
                 }
-            });
-        }
+            }
 
-        // Gráfico de Materiais
-        const materiaisCtx = document.getElementById('materiaisChart');
-        if (materiaisCtx) {
-            this.materiaisChart = new Chart(materiaisCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Em estoque', 'Baixo estoque', 'Em falta'],
-                    datasets: [{
-                        data: this.getMateriaisData(),
-                        backgroundColor: [
-                            'var(--success-color)',
-                            'var(--warning-color)',
-                            'var(--danger-color)'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
+            habilitarSistema() {
+                document.querySelector('.app-wrapper').classList.add('system-enabled');
+                document.getElementById('login').classList.remove('active');
+                document.getElementById('dashboard').classList.add('active');
+                this.updateDashboard();
+            }
+
+            openTab(tabName) {
+                document.querySelectorAll('.content-panel').forEach(panel => {
+                    panel.classList.remove('active');
+                });
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                const targetPanel = document.getElementById(tabName);
+                const targetLink = document.querySelector(`[onclick="openTab('${tabName}')"]`);
+                
+                if (targetPanel) targetPanel.classList.add('active');
+                if (targetLink) targetLink.classList.add('active');
+            }
+
+            toggleTheme() {
+                this.theme = this.theme === 'light' ? 'dark' : 'light';
+                this.applyTheme();
+                localStorage.setItem('theme', this.theme);
+            }
+
+            applyTheme() {
+                document.documentElement.setAttribute('data-theme', this.theme);
+            }
+
+            initCharts() {
+                const frequenciaCtx = document.getElementById('frequenciaChart');
+                if (frequenciaCtx) {
+                    this.frequenciaChart = new Chart(frequenciaCtx, {
+                        type: 'line',
+                        data: {
+                            labels: this.getUltimos30Dias(),
+                            datasets: [{
+                                label: 'Presentes',
+                                data: Array(30).fill(0),
+                                borderColor: 'var(--primary-color)',
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                }
+                            }
                         }
-                    }
+                    });
                 }
-            });
+
+                const materiaisCtx = document.getElementById('materiaisChart');
+                if (materiaisCtx) {
+                    this.materiaisChart = new Chart(materiaisCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Em estoque', 'Baixo estoque', 'Em falta'],
+                            datasets: [{
+                                data: [70, 20, 10],
+                                backgroundColor: [
+                                    'var(--success-color)',
+                                    'var(--warning-color)',
+                                    'var(--danger-color)'
+                                ]
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            updateDashboard() {
+                document.getElementById('totalColaboradores').textContent = this.colaboradores.length;
+                document.getElementById('presentesHoje').textContent = this.getPresentesHoje();
+                document.getElementById('materiaisBaixa').textContent = this.getMateriaisBaixoEstoque();
+                document.getElementById('custosMes').textContent = this.formatarMoeda(this.getCustosMes());
+
+                if (this.frequenciaChart) {
+                    this.frequenciaChart.update();
+                }
+                if (this.materiaisChart) {
+                    this.materiaisChart.update();
+                }
+            }
+
+            getUltimos30Dias() {
+                const dias = [];
+                for (let i = 29; i >= 0; i--) {
+                    const data = new Date();
+                    data.setDate(data.getDate() - i);
+                    dias.push(data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }));
+                }
+                return dias;
+            }
+
+            getPresentesHoje() {
+                return this.colaboradores.length - Math.floor(Math.random() * 3);
+            }
+
+            getMateriaisBaixoEstoque() {
+                return Math.floor(Math.random() * 5);
+            }
+
+            getCustosMes() {
+                return Math.random() * 100000;
+            }
+
+            formatarMoeda(valor) {
+                return new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(valor);
+            }
+
+            async carregarDadosLocalmente() {
+                try {
+                    const dados = localStorage.getItem('sistemaGestaoObras');
+                    if (dados) {
+                        const parsedData = JSON.parse(dados);
+                        Object.assign(this, parsedData);
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar dados:', error);
+                }
+            }
+
+            async salvarDadosLocalmente() {
+                try {
+                    const dados = {
+                        colaboradores: this.colaboradores,
+                        desligados: this.desligados,
+                        frequencias: this.frequencias,
+                        materiais: this.materiais
+                    };
+                    localStorage.setItem('sistemaGestaoObras', JSON.stringify(dados));
+                } catch (error) {
+                    console.error('Erro ao salvar dados:', error);
+                }
+            }
         }
-    }
 
-    updateDashboard() {
-        // Atualizar contadores
-        document.getElementById('totalColaboradores').textContent = this.colaboradores.length;
-        document.getElementById('presentesHoje').textContent = this.getPresentesHoje();
-        document.getElementById('materiaisBaixa').textContent = this.getMateriaisBaixoEstoque();
-        document.getElementById('custosMes').textContent = this.formatarMoeda(this.getCustosMes());
+        // Inicialização do sistema
+        let sistemaGestao;
+        document.addEventListener('DOMContentLoaded', () => {
+            sistemaGestao = new SistemaGestaoObras();
+            window.sistemaGestao = sistemaGestao;
+        });
 
-        // Atualizar gráficos
-        if (this.frequenciaChart) {
-            this.frequenciaChart.data.datasets[0].data = this.getFrequenciaData();
-            this.frequenciaChart.update();
+        // Funções globais
+        function openTab(tabName) {
+            if (sistemaGestao) {
+                sistemaGestao.openTab(tabName);
+            }
         }
 
-        if (this.materiaisChart) {
-            this.materiaisChart.data.datasets[0].data = this.getMateriaisData();
-            this.materiaisChart.update();
+        function toggleTheme() {
+            if (sistemaGestao) {
+                sistemaGestao.toggleTheme();
+            }
         }
-    }
-
-    toggleTheme() {
-        this.theme = this.theme === 'light' ? 'dark' : 'light';
-        this.applyTheme();
+    </script>
+</body>
+</html>
