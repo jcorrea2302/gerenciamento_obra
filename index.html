@@ -308,3 +308,100 @@
             <button class="primary-button" onclick="fecharModal()">OK</button>
         </div>
     </div>
+    <!-- ... todo o código HTML anterior ... -->
+
+    <div id="modalConfirmacao" class="modal">
+        <div class="modal-content">
+            <h3>Confirmação</h3>
+            <p id="modalMensagem"></p>
+            <button class="primary-button" onclick="fecharModal()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        class SistemaGestaoObras {
+            constructor() {
+                this.colaboradores = [];
+                this.desligados = [];
+                this.frequencias = {};
+                this.materiais = [];
+                this.initEventListeners();
+                this.carregarDadosLocalmente();
+            }
+
+            initEventListeners() {
+                document.getElementById('loginForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.realizarLogin();
+                });
+
+                document.getElementById('cadastroForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.cadastrarColaborador();
+                });
+
+                document.getElementById('materialForm')?.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.cadastrarMaterial();
+                });
+            }
+
+            realizarLogin() {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+
+                if (username === 'admin' && password === 'admin123') {
+                    this.habilitarAbas();
+                    this.abrirAba('cadastro');
+                    this.mostrarModal('Login realizado com sucesso!');
+                } else {
+                    this.mostrarModal('Credenciais inválidas. Tente novamente.');
+                }
+            }
+
+            habilitarAbas() {
+                const abas = ['navCadastro', 'navFrequencia', 'navDatabase', 'navDesligamento', 'navMateriais', 'navCronograma'];
+                abas.forEach(abaId => {
+                    document.getElementById(abaId).disabled = false;
+                });
+            }
+
+            abrirAba(nomeAba) {
+                document.querySelectorAll('.content-panel').forEach(panel => {
+                    panel.classList.remove('active');
+                });
+
+                document.querySelectorAll('.nav-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+
+                document.getElementById(nomeAba).classList.add('active');
+                document.querySelector(`[onclick="openTab('${nomeAba}')"]`).classList.add('active');
+            }
+
+            mostrarModal(mensagem) {
+                document.getElementById('modalMensagem').textContent = mensagem;
+                document.getElementById('modalConfirmacao').classList.add('active');
+            }
+
+            fecharModal() {
+                document.getElementById('modalConfirmacao').classList.remove('active');
+            }
+        }
+
+        // Inicialização do sistema
+        document.addEventListener('DOMContentLoaded', () => {
+            window.sistemaGestao = new SistemaGestaoObras();
+        });
+
+        // Funções globais
+        function openTab(tabName) {
+            window.sistemaGestao.abrirAba(tabName);
+        }
+
+        function fecharModal() {
+            window.sistemaGestao.fecharModal();
+        }
+    </script>
+</body>
+</html>
